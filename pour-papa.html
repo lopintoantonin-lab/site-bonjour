@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pour mon père — Antonin Lopinto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #faf7f2;
+      --bg-card: #ffffff;
+      --text: #1a1f2e;
+      --text-soft: #5a6175;
+      --accent: #c8553d;
+      --accent-dark: #a8442f;
+      --border: #e8e2d5;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      padding: 4rem 2rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .letter {
+      max-width: 640px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4rem 3.5rem;
+      box-shadow: 0 24px 60px rgba(26, 31, 46, 0.07);
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 2.5rem;
+      transition: all 0.25s ease;
+    }
+
+    .back:hover {
+      color: var(--accent);
+      transform: translateX(-4px);
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      margin-bottom: 0.4rem;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--text-soft);
+      margin-bottom: 2.5rem;
+      font-size: 1.05rem;
+    }
+
+    .letter p {
+      font-size: 1.08rem;
+      color: var(--text);
+      margin-bottom: 1.4rem;
+      line-height: 1.75;
+    }
+
+    .highlight {
+      background: linear-gradient(120deg, transparent 0%, transparent 50%, rgba(200, 85, 61, 0.18) 50%, rgba(200, 85, 61, 0.18) 100%);
+      padding: 0 4px;
+      font-weight: 600;
+    }
+
+    .signature {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin-top: 2.5rem;
+      text-align: right;
+    }
+
+    .list {
+      margin: 1.5rem 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: item;
+    }
+
+    .list li {
+      padding: 0.9rem 0 0.9rem 3rem;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+      font-size: 1.05rem;
+      transition: padding-left 0.2s ease;
+    }
+
+    .list li:last-child { border-bottom: none; }
+
+    .list li:hover { padding-left: 3.3rem; }
+
+    .list li::before {
+      content: counter(item, decimal-leading-zero);
+      counter-increment: item;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Playfair Display', serif;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.9rem 1.7rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(200, 85, 61, 0.28);
+    }
+
+    .btn:hover {
+      background: var(--accent-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(200, 85, 61, 0.4);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1.5rem; }
+      .letter { padding: 2.5rem 1.8rem; }
+      h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <article class="letter">
+    <a href="index.html" class="back">← Retour à l'accueil</a>
+
+    <h1>Pour mon père.</h1>
+    <p class="subtitle">— Et pour quiconque pense que je perds mon temps.</p>
+
+    <p>Je sais ce que tu penses quand tu me vois passer des heures devant cet écran.</p>
+
+    <p>Tu te dis : <em>"Encore. À quoi il joue ?"</em></p>
+
+    <p>Voilà ce qui se passe vraiment.</p>
+
+    <p>Aujourd'hui, je peux <span class="highlight">décrire en français</span> ce que je veux construire, et une intelligence artificielle le fabrique pour moi. Ce site que tu lis en est la preuve. Je n'ai pas écrit une seule ligne de code.</p>
+
+    <p>Je n'apprends pas à coder au sens classique. J'apprends à <span class="highlight">commander une IA</span>. C'est très différent. Et c'est probablement la compétence la plus précieuse des dix prochaines années.</p>
+
+    <p>Mon plan est simple :</p>
+
+    <ol class="list">
+      <li>Maîtriser l'outil à fond.</li>
+      <li>Rentabiliser son coût (108€ par mois).</li>
+      <li>Construire des projets qui ont du sens — pour moi et pour d'autres.</li>
+    </ol>
+
+    <p>Ce n'est pas un loisir. C'est une formation que mon école ne donne pas encore. Et c'est exactement pour ça qu'elle vaut le coup d'être prise au sérieux maintenant, pas dans cinq ans.</p>
+
+    <p>Merci de lire jusqu'ici.</p>
+
+    <p class="signature">— Antonin</p>
+
+    <a href="index.html" class="btn">Retour à l'accueil</a>
+  </article>
+
+</body>
+</html>
