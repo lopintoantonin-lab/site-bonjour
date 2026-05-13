@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo — une API en action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #faf7f2;
+      --bg-card: #ffffff;
+      --text: #1a1f2e;
+      --text-soft: #5a6175;
+      --accent: #c8553d;
+      --accent-dark: #a8442f;
+      --border: #e8e2d5;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 3rem 2rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .container { max-width: 720px; width: 100%; }
+
+    .back {
+      display: inline-block;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      transition: all 0.2s ease;
+    }
+
+    .back:hover { color: var(--accent); transform: translateX(-3px); }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      margin-bottom: 0.6rem;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      color: var(--text-soft);
+      font-size: 1.05rem;
+      margin-bottom: 2.5rem;
+      max-width: 560px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 1rem 1.8rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(200, 85, 61, 0.28);
+      font-family: inherit;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--accent-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(200, 85, 61, 0.4);
+    }
+
+    .btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+
+    .dog-card {
+      margin-top: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.4rem;
+      box-shadow: 0 14px 36px rgba(26, 31, 46, 0.08);
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dog-card img {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .status {
+      margin-top: 0.9rem;
+      font-size: 0.88rem;
+      color: var(--text-soft);
+    }
+
+    details {
+      margin-top: 2rem;
+      background: #1a1f2e;
+      border-radius: 8px;
+      padding: 1.1rem 1.4rem;
+    }
+
+    summary {
+      cursor: pointer;
+      color: #d8dadf;
+      font-weight: 600;
+      font-size: 0.92rem;
+      user-select: none;
+    }
+
+    summary:hover { color: #fff; }
+
+    pre {
+      margin-top: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #a3d9b1;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .counter {
+      margin-top: 2rem;
+      font-size: 0.92rem;
+      color: var(--text-soft);
+    }
+
+    .counter strong {
+      color: var(--accent);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+    }
+
+    .api-url {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      color: var(--accent);
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a class="back" href="index.html">← Retour à l'accueil</a>
+
+    <span class="eyebrow">Demo pédagogique</span>
+    <h1>Une API, en action.</h1>
+    <p class="subtitle">Clique sur le bouton. Une vraie image de chien arrive depuis un serveur qui s'appelle <strong>dog.ceo</strong>, quelque part dans le monde. Voilà comment marche internet.</p>
+
+    <button class="btn" id="fetch-btn">Donne-moi un chien 🐕</button>
+
+    <div class="dog-card" id="dog-card" hidden>
+      <img id="dog-image" alt="Un chien">
+      <p class="status" id="status"></p>
+    </div>
+
+    <details>
+      <summary>👀 Voir ce que l'API a renvoyé exactement</summary>
+      <pre id="raw-json">Clique sur le bouton pour voir.</pre>
+    </details>
+
+    <p class="counter">Chiens demandés : <strong id="count">0</strong></p>
+
+    <p style="margin-top: 2rem; font-size: 0.85rem; color: var(--text-soft);">
+      L'adresse appelée à chaque clic :<br>
+      <span class="api-url">https://dog.ceo/api/breeds/image/random</span>
+    </p>
+  </div>
+
+  <script>
+    const btn = document.getElementById('fetch-btn');
+    const card = document.getElementById('dog-card');
+    const img = document.getElementById('dog-image');
+    const status = document.getElementById('status');
+    const rawJson = document.getElementById('raw-json');
+    const count = document.getElementById('count');
+    let total = 0;
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Demande en cours...';
+      const start = Date.now();
+
+      try {
+        // On envoie une demande à l'API
+        const response = await fetch('https://dog.ceo/api/breeds/image/random');
+
+        // L'API renvoie du JSON, on le transforme en objet utilisable
+        const data = await response.json();
+
+        // Le champ "message" contient l'URL de l'image
+        img.src = data.message;
+        card.hidden = false;
+
+        const elapsed = Date.now() - start;
+        status.textContent = `Reçu en ${elapsed} millisecondes.`;
+
+        // On affiche la réponse brute (pour comprendre ce que c'est)
+        rawJson.textContent = JSON.stringify(data, null, 2);
+
+        total++;
+        count.textContent = total;
+      } catch (err) {
+        status.textContent = 'L\'API ne répond pas. Réessaie.';
+        card.hidden = false;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Donne-moi un autre chien 🐕';
+      }
+    });
+  </script>
+
+</body>
+</html>
