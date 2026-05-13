@@ -64,10 +64,26 @@
       line-height: 1.1;
     }
 
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      margin-bottom: 0.4rem;
+      line-height: 1.1;
+    }
+
     .subtitle {
       color: var(--text-soft);
       font-size: 1.05rem;
       margin-bottom: 2.5rem;
+      max-width: 560px;
+    }
+
+    .section-subtitle {
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      margin-bottom: 1.8rem;
       max-width: 560px;
     }
 
@@ -124,6 +140,31 @@
       color: var(--text-soft);
     }
 
+    .btn-fav {
+      margin-top: 1rem;
+      padding: 0.7rem 1.3rem;
+      background: var(--bg);
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-fav:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-fav.saved {
+      background: var(--accent);
+      color: white;
+      pointer-events: none;
+    }
+
     details {
       margin-top: 2rem;
       background: #1a1f2e;
@@ -175,9 +216,86 @@
       margin-top: 0.5rem;
     }
 
+    .favorites-section {
+      margin-top: 5rem;
+      padding-top: 3.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .favorites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.9rem;
+      margin: 2rem 0 1.5rem;
+    }
+
+    .fav-item {
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      transition: all 0.25s ease;
+    }
+
+    .fav-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(26, 31, 46, 0.1); }
+
+    .fav-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .remove-fav {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.4rem;
+      background: rgba(26, 31, 46, 0.85);
+      color: white;
+      border: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+
+    .remove-fav:hover { background: var(--accent); }
+
+    .empty {
+      color: var(--text-soft);
+      font-style: italic;
+      padding: 2rem 0;
+      text-align: center;
+    }
+
+    .btn-clear {
+      padding: 0.55rem 1rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-soft);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-clear:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     @media (max-width: 600px) {
       body { padding: 1.5rem 1rem; }
       h1 { font-size: 2.2rem; }
+      h2 { font-size: 1.6rem; }
     }
   </style>
 </head>
@@ -186,15 +304,16 @@
   <div class="container">
     <a class="back" href="index.html">← Retour à l'accueil</a>
 
-    <span class="eyebrow">Demo pédagogique</span>
+    <span class="eyebrow">Demo 1 — API</span>
     <h1>Une API, en action.</h1>
-    <p class="subtitle">Clique sur le bouton. Une vraie image de chien arrive depuis un serveur qui s'appelle <strong>dog.ceo</strong>, quelque part dans le monde. Voilà comment marche internet.</p>
+    <p class="subtitle">Clique sur le bouton. Une vraie image de chien arrive depuis un serveur qui s'appelle <strong>dog.ceo</strong>, quelque part dans le monde.</p>
 
     <button class="btn" id="fetch-btn">Donne-moi un chien 🐕</button>
 
     <div class="dog-card" id="dog-card" hidden>
       <img id="dog-image" alt="Un chien">
       <p class="status" id="status"></p>
+      <button class="btn-fav" id="save-btn">❤️ Garder ce chien</button>
     </div>
 
     <details>
@@ -204,20 +323,33 @@
 
     <p class="counter">Chiens demandés : <strong id="count">0</strong></p>
 
-    <p style="margin-top: 2rem; font-size: 0.85rem; color: var(--text-soft);">
+    <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-soft);">
       L'adresse appelée à chaque clic :<br>
       <span class="api-url">https://dog.ceo/api/breeds/image/random</span>
     </p>
+
+    <section class="favorites-section">
+      <span class="eyebrow">Demo 2 — Base de données</span>
+      <h2>Tes chiens favoris.</h2>
+      <p class="section-subtitle">Ces images sont sauvegardées dans <strong>la mini-DB de ton navigateur</strong> (localStorage). Tu peux fermer l'onglet, redémarrer ton ordi, revenir demain — ils seront toujours là.</p>
+
+      <div class="favorites-grid" id="favorites-grid"></div>
+
+      <button class="btn-clear" id="clear-btn">Tout effacer</button>
+    </section>
   </div>
 
   <script>
+    // === Demo 1 : API ===
     const btn = document.getElementById('fetch-btn');
     const card = document.getElementById('dog-card');
     const img = document.getElementById('dog-image');
     const status = document.getElementById('status');
     const rawJson = document.getElementById('raw-json');
     const count = document.getElementById('count');
+    const saveBtn = document.getElementById('save-btn');
     let total = 0;
+    let currentDog = null;
 
     btn.addEventListener('click', async () => {
       btn.disabled = true;
@@ -225,24 +357,23 @@
       const start = Date.now();
 
       try {
-        // On envoie une demande à l'API
         const response = await fetch('https://dog.ceo/api/breeds/image/random');
-
-        // L'API renvoie du JSON, on le transforme en objet utilisable
         const data = await response.json();
 
-        // Le champ "message" contient l'URL de l'image
         img.src = data.message;
+        currentDog = data.message;
         card.hidden = false;
 
         const elapsed = Date.now() - start;
         status.textContent = `Reçu en ${elapsed} millisecondes.`;
-
-        // On affiche la réponse brute (pour comprendre ce que c'est)
         rawJson.textContent = JSON.stringify(data, null, 2);
 
         total++;
         count.textContent = total;
+
+        saveBtn.classList.remove('saved');
+        saveBtn.textContent = isAlreadySaved(currentDog) ? '✓ Déjà dans tes favoris' : '❤️ Garder ce chien';
+        if (isAlreadySaved(currentDog)) saveBtn.classList.add('saved');
       } catch (err) {
         status.textContent = 'L\'API ne répond pas. Réessaie.';
         card.hidden = false;
@@ -251,6 +382,76 @@
         btn.textContent = 'Donne-moi un autre chien 🐕';
       }
     });
+
+    // === Demo 2 : Mini-DB du navigateur (localStorage) ===
+    const favGrid = document.getElementById('favorites-grid');
+    const clearBtn = document.getElementById('clear-btn');
+    const STORAGE_KEY = 'dog-favorites';
+
+    function loadFavorites() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveFavorites(favs) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+    }
+
+    function isAlreadySaved(url) {
+      return loadFavorites().includes(url);
+    }
+
+    function renderFavorites() {
+      const favs = loadFavorites();
+      favGrid.innerHTML = '';
+      if (favs.length === 0) {
+        favGrid.innerHTML = '<p class="empty" style="grid-column: 1/-1;">Aucun favori pour l\'instant. Demande un chien, puis clique sur ❤️.</p>';
+        return;
+      }
+      favs.forEach((url, i) => {
+        const div = document.createElement('div');
+        div.className = 'fav-item';
+        div.innerHTML = `<img src="${url}" alt="Favori"><button data-i="${i}" class="remove-fav" title="Retirer">✕</button>`;
+        favGrid.appendChild(div);
+      });
+    }
+
+    saveBtn.addEventListener('click', () => {
+      if (!currentDog || isAlreadySaved(currentDog)) return;
+      const favs = loadFavorites();
+      favs.push(currentDog);
+      saveFavorites(favs);
+      renderFavorites();
+      saveBtn.classList.add('saved');
+      saveBtn.textContent = '✓ Sauvé dans la mini-DB';
+    });
+
+    favGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.remove-fav');
+      if (!btn) return;
+      const favs = loadFavorites();
+      favs.splice(parseInt(btn.dataset.i), 1);
+      saveFavorites(favs);
+      renderFavorites();
+      if (currentDog && !isAlreadySaved(currentDog)) {
+        saveBtn.classList.remove('saved');
+        saveBtn.textContent = '❤️ Garder ce chien';
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (loadFavorites().length === 0) return;
+      if (confirm('Tout effacer ?')) {
+        saveFavorites([]);
+        renderFavorites();
+        if (currentDog) {
+          saveBtn.classList.remove('saved');
+          saveBtn.textContent = '❤️ Garder ce chien';
+        }
+      }
+    });
+
+    renderFavorites();
   </script>
 
 </body>
