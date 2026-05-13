@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo — une API en action</title>
+  <title>Demo — API + Base de données</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -84,8 +85,10 @@
       color: var(--text-soft);
       font-size: 0.95rem;
       margin-bottom: 1.8rem;
-      max-width: 560px;
+      max-width: 580px;
     }
+
+    .section-subtitle strong { color: var(--text); }
 
     .btn {
       display: inline-block;
@@ -154,7 +157,7 @@
       font-family: inherit;
     }
 
-    .btn-fav:hover {
+    .btn-fav:hover:not(.saved):not(:disabled) {
       background: var(--accent);
       color: white;
     }
@@ -164,6 +167,8 @@
       color: white;
       pointer-events: none;
     }
+
+    .btn-fav:disabled { opacity: 0.6; cursor: wait; }
 
     details {
       margin-top: 2rem;
@@ -222,6 +227,18 @@
       border-top: 1px solid var(--border);
     }
 
+    .shared-badge {
+      display: inline-block;
+      background: #d4edda;
+      color: #155724;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+
     .favorites-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -241,11 +258,7 @@
 
     .fav-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(26, 31, 46, 0.1); }
 
-    .fav-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .fav-item img { width: 100%; height: 100%; object-fit: cover; }
 
     .remove-fav {
       position: absolute;
@@ -287,9 +300,13 @@
       font-family: inherit;
     }
 
-    .btn-clear:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+    .btn-clear:hover { border-color: var(--accent); color: var(--accent); }
+
+    .loading {
+      color: var(--text-soft);
+      font-style: italic;
+      padding: 2rem 0;
+      text-align: center;
     }
 
     @media (max-width: 600px) {
@@ -329,17 +346,24 @@
     </p>
 
     <section class="favorites-section">
-      <span class="eyebrow">Demo 2 — Base de données</span>
-      <h2>Tes chiens favoris.</h2>
-      <p class="section-subtitle">Ces images sont sauvegardées dans <strong>la mini-DB de ton navigateur</strong> (localStorage). Tu peux fermer l'onglet, redémarrer ton ordi, revenir demain — ils seront toujours là.</p>
+      <span class="eyebrow">Demo 2 — Base de données Supabase</span>
+      <h2>Tes chiens favoris.<span class="shared-badge">🌍 partagé</span></h2>
+      <p class="section-subtitle">Ces images sont stockées dans une <strong>vraie base de données Supabase</strong>, hébergée sur un serveur dans le cloud. Ouvre cette page sur ton tel, en navigation privée, ou demande à un pote — vous verrez exactement les <strong>mêmes chiens</strong>. C'est ça, une DB partagée.</p>
 
-      <div class="favorites-grid" id="favorites-grid"></div>
+      <div class="favorites-grid" id="favorites-grid">
+        <p class="loading" style="grid-column: 1/-1;">Chargement depuis la DB...</p>
+      </div>
 
       <button class="btn-clear" id="clear-btn">Tout effacer</button>
     </section>
   </div>
 
   <script>
+    // === Connexion à la base de données Supabase ===
+    const SUPABASE_URL = 'https://zphovuegdcorwhsxwojg.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_DYUzwwF2iJoIFZBx_ftfXw_9ESz2P6z';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // === Demo 1 : API ===
     const btn = document.getElementById('fetch-btn');
     const card = document.getElementById('dog-card');
@@ -371,9 +395,7 @@
         total++;
         count.textContent = total;
 
-        saveBtn.classList.remove('saved');
-        saveBtn.textContent = isAlreadySaved(currentDog) ? '✓ Déjà dans tes favoris' : '❤️ Garder ce chien';
-        if (isAlreadySaved(currentDog)) saveBtn.classList.add('saved');
+        await updateSaveBtnState();
       } catch (err) {
         status.textContent = 'L\'API ne répond pas. Réessaie.';
         card.hidden = false;
@@ -383,72 +405,105 @@
       }
     });
 
-    // === Demo 2 : Mini-DB du navigateur (localStorage) ===
+    // === Demo 2 : Vraie DB (Supabase) ===
     const favGrid = document.getElementById('favorites-grid');
     const clearBtn = document.getElementById('clear-btn');
-    const STORAGE_KEY = 'dog-favorites';
 
-    function loadFavorites() {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+    async function loadFavorites() {
+      const { data, error } = await sb
+        .from('dog_favorites')
+        .select('id, image_url')
+        .order('created_at', { ascending: false });
+      if (error) { console.error('Erreur de lecture :', error); return []; }
+      return data;
     }
 
-    function saveFavorites(favs) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+    async function isAlreadySaved(url) {
+      const { data, error } = await sb
+        .from('dog_favorites')
+        .select('id')
+        .eq('image_url', url)
+        .limit(1);
+      if (error) return false;
+      return data.length > 0;
     }
 
-    function isAlreadySaved(url) {
-      return loadFavorites().includes(url);
+    async function addFavorite(url) {
+      const { error } = await sb
+        .from('dog_favorites')
+        .insert({ image_url: url });
+      if (error) console.error('Erreur d\'ajout :', error);
     }
 
-    function renderFavorites() {
-      const favs = loadFavorites();
+    async function removeFavorite(id) {
+      const { error } = await sb
+        .from('dog_favorites')
+        .delete()
+        .eq('id', id);
+      if (error) console.error('Erreur de suppression :', error);
+    }
+
+    async function clearAllFavorites() {
+      const { error } = await sb
+        .from('dog_favorites')
+        .delete()
+        .gt('id', 0);
+      if (error) console.error('Erreur de vidage :', error);
+    }
+
+    async function renderFavorites() {
+      const favs = await loadFavorites();
       favGrid.innerHTML = '';
       if (favs.length === 0) {
         favGrid.innerHTML = '<p class="empty" style="grid-column: 1/-1;">Aucun favori pour l\'instant. Demande un chien, puis clique sur ❤️.</p>';
         return;
       }
-      favs.forEach((url, i) => {
+      favs.forEach(({ id, image_url }) => {
         const div = document.createElement('div');
         div.className = 'fav-item';
-        div.innerHTML = `<img src="${url}" alt="Favori"><button data-i="${i}" class="remove-fav" title="Retirer">✕</button>`;
+        div.innerHTML = `<img src="${image_url}" alt="Favori"><button data-id="${id}" class="remove-fav" title="Retirer">✕</button>`;
         favGrid.appendChild(div);
       });
     }
 
-    saveBtn.addEventListener('click', () => {
-      if (!currentDog || isAlreadySaved(currentDog)) return;
-      const favs = loadFavorites();
-      favs.push(currentDog);
-      saveFavorites(favs);
-      renderFavorites();
-      saveBtn.classList.add('saved');
-      saveBtn.textContent = '✓ Sauvé dans la mini-DB';
-    });
-
-    favGrid.addEventListener('click', (e) => {
-      const btn = e.target.closest('.remove-fav');
-      if (!btn) return;
-      const favs = loadFavorites();
-      favs.splice(parseInt(btn.dataset.i), 1);
-      saveFavorites(favs);
-      renderFavorites();
-      if (currentDog && !isAlreadySaved(currentDog)) {
+    async function updateSaveBtnState() {
+      if (!currentDog) return;
+      const exists = await isAlreadySaved(currentDog);
+      if (exists) {
+        saveBtn.classList.add('saved');
+        saveBtn.textContent = '✓ Déjà dans la DB';
+      } else {
         saveBtn.classList.remove('saved');
         saveBtn.textContent = '❤️ Garder ce chien';
       }
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      if (!currentDog) return;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Envoi vers la DB...';
+      await addFavorite(currentDog);
+      await renderFavorites();
+      saveBtn.disabled = false;
+      await updateSaveBtnState();
     });
 
-    clearBtn.addEventListener('click', () => {
-      if (loadFavorites().length === 0) return;
-      if (confirm('Tout effacer ?')) {
-        saveFavorites([]);
-        renderFavorites();
-        if (currentDog) {
-          saveBtn.classList.remove('saved');
-          saveBtn.textContent = '❤️ Garder ce chien';
-        }
-      }
+    favGrid.addEventListener('click', async (e) => {
+      const removeBtn = e.target.closest('.remove-fav');
+      if (!removeBtn) return;
+      const id = parseInt(removeBtn.dataset.id);
+      await removeFavorite(id);
+      await renderFavorites();
+      await updateSaveBtnState();
+    });
+
+    clearBtn.addEventListener('click', async () => {
+      const favs = await loadFavorites();
+      if (favs.length === 0) return;
+      if (!confirm('Tout effacer pour TOUS les visiteurs ?')) return;
+      await clearAllFavorites();
+      await renderFavorites();
+      await updateSaveBtnState();
     });
 
     renderFavorites();
