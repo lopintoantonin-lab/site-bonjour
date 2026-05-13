@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bonjour Antonin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { overflow-x: hidden; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050816;
+      color: #e2e8f0;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    #network {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    section {
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    h1, h2 {
+      background: linear-gradient(135deg, #60a5fa, #06b6d4, #818cf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -2px;
+      filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.4));
+    }
+
+    h1 {
+      font-size: 6rem;
+      margin-bottom: 1rem;
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.4rem;
+      max-width: 650px;
+      color: #cbd5e1;
+    }
+
+    .hint {
+      margin-top: 2rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: white;
+      border-radius: 999px;
+      font-weight: 600;
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.6); transform: scale(1); }
+      50% { box-shadow: 0 0 60px rgba(6, 182, 212, 0.9); transform: scale(1.04); }
+    }
+
+    .ripple {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: ripple-anim 0.9s ease-out forwards;
+      z-index: 2;
+    }
+
+    @keyframes ripple-anim {
+      0% { width: 0; height: 0; opacity: 0.7; }
+      100% { width: 400px; height: 400px; opacity: 0; }
+    }
+
+    .counter {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      color: #60a5fa;
+      padding: 0.7rem 1.3rem;
+      border-radius: 999px;
+      font-weight: 700;
+      z-index: 1000;
+      font-size: 0.95rem;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #64748b;
+      font-size: 0.9rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+
+    .highlight {
+      color: #06b6d4;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="network"></canvas>
+
+  <div class="counter">Clics : <span id="count">0</span></div>
+
+  <main>
+    <section>
+      <h1>Bonjour Antonin</h1>
+      <p>Bouge ta souris. Clique partout. Scroll en bas.</p>
+      <div class="hint">Montre ça à ton père</div>
+      <div class="scroll-hint">▼ scroll</div>
+    </section>
+
+    <section>
+      <h2>Tu apprends à coder</h2>
+      <p>Sans coder. Tu décris ce que tu veux en français, <span class="highlight">Claude le construit</span>. C'est ça le pouvoir de l'IA aujourd'hui : transformer une intention en réalité.</p>
+    </section>
+
+    <section>
+      <h2>Une école de commerce</h2>
+      <p>Tu n'es pas développeur. Tu n'as pas besoin de l'être. Tu as quelque chose de plus rare : <span class="highlight">une vision, du temps, et la curiosité</span> de prendre la vague.</p>
+    </section>
+
+    <section>
+      <h2>108 euros par mois</h2>
+      <p>Le prix de ton abonnement Claude. Une fois que tu génères ça, l'outil <span class="highlight">est gratuit</span> — et tu peux construire ce qui te tient à cœur.</p>
+    </section>
+
+    <section>
+      <h2>Et ça, c'est juste la session 1</h2>
+      <p>Tu viens d'écrire un site web animé sans taper une ligne de code. <span class="highlight">C'est la nouvelle norme.</span></p>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('network');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const PARTICLE_COUNT = 90;
+    const CONNECT_DIST = 130;
+    const MOUSE_REACH = 220;
+
+    const particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 1.8 + 0.8
+      });
+    }
+
+    const mouse = { x: -9999, y: -9999 };
+    window.addEventListener('mousemove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseleave', () => {
+      mouse.x = -9999;
+      mouse.y = -9999;
+    });
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(96, 165, 250, 0.85)';
+        ctx.fill();
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < CONNECT_DIST) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(59, 130, 246, ${(1 - d / CONNECT_DIST) * 0.5})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+        const dx = particles[i].x - mouse.x;
+        const dy = particles[i].y - mouse.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < MOUSE_REACH) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = `rgba(6, 182, 212, ${(1 - d / MOUSE_REACH) * 0.9})`;
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    const colors = ['#60a5fa', '#06b6d4', '#818cf8', '#22d3ee', '#3b82f6'];
+    let count = 0;
+    const counter = document.getElementById('count');
+
+    document.addEventListener('click', (e) => {
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      ripple.style.left = e.clientX + 'px';
+      ripple.style.top = e.clientY + 'px';
+      ripple.style.transform = 'translate(-50%, -50%)';
+      ripple.style.background = `radial-gradient(circle, ${colors[Math.floor(Math.random() * colors.length)]} 0%, transparent 70%)`;
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 900);
+
+      count++;
+      counter.textContent = count;
+    });
+  </script>
+
+</body>
+</html>
